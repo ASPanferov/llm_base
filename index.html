@@ -1,0 +1,433 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Как работают нейросети: интерактивный гид</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body class="bg-gray-900 text-white overflow-x-hidden">
+    <!-- Hero Section -->
+    <section id="hero" class="min-h-screen flex items-center justify-center relative">
+        <div class="container mx-auto px-6 text-center">
+            <div class="neural-brain mb-8">
+                <div class="brain-container relative w-64 h-64 mx-auto">
+                    <div class="neural-nodes"></div>
+                    <div class="neural-connections"></div>
+                </div>
+            </div>
+            
+            <h1 class="text-6xl md:text-8xl font-bold mb-6 bg-gradient-to-r from-blue-400 to-purple-600 bg-clip-text text-transparent">
+                Как работают<br>нейросети
+            </h1>
+            
+            <p class="text-xl md:text-2xl mb-8 text-gray-300 max-w-3xl mx-auto">
+                Разберитесь в основах LLM за 5 минут<br>
+                Интерактивное путешествие в мир искусственного интеллекта
+            </p>
+            
+            <button id="start-journey" class="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 px-8 py-4 rounded-full text-xl font-semibold transition-all duration-300 transform hover:scale-105">
+                Начать исследование
+                <i class="fas fa-arrow-down ml-2"></i>
+            </button>
+        </div>
+        
+        <div class="scroll-indicator absolute bottom-8 left-1/2 transform -translate-x-1/2 animate-bounce">
+            <i class="fas fa-chevron-down text-2xl text-gray-400"></i>
+        </div>
+    </section>
+
+    <!-- Progress Bar -->
+    <div class="fixed top-0 left-0 w-full h-1 bg-gray-800 z-50">
+        <div id="progress-bar" class="h-full bg-gradient-to-r from-blue-500 to-purple-600 transition-all duration-300" style="width: 0%"></div>
+    </div>
+
+    <!-- Navigation -->
+    <nav class="fixed top-4 right-4 z-40">
+        <div class="bg-gray-800 bg-opacity-90 rounded-lg p-4">
+            <div class="flex flex-col space-y-2">
+                <a href="#tokens" class="nav-link text-sm hover:text-blue-400 transition-colors">Токены</a>
+                <a href="#context" class="nav-link text-sm hover:text-blue-400 transition-colors">Контекст</a>
+                <a href="#prompts" class="nav-link text-sm hover:text-blue-400 transition-colors">Промпты</a>
+                <a href="#temperature" class="nav-link text-sm hover:text-blue-400 transition-colors">Температура</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Tokens Section -->
+    <section id="tokens" class="min-h-screen py-20">
+        <div class="container mx-auto px-6">
+            <div class="text-center mb-16">
+                <h2 class="text-5xl font-bold mb-6 bg-gradient-to-r from-green-400 to-blue-500 bg-clip-text text-transparent">
+                    Токены
+                </h2>
+                <p class="text-xl text-gray-300 max-w-3xl mx-auto">
+                    Как нейросети разбивают текст на части для понимания
+                </p>
+            </div>
+            
+            <div class="max-w-4xl mx-auto">
+                <div class="bg-gray-800 rounded-2xl p-8">
+                    <div class="mb-6">
+                        <label class="block text-lg font-semibold mb-3">Введите текст для токенизации:</label>
+                        <textarea 
+                            id="token-input" 
+                            class="w-full p-4 bg-gray-700 rounded-lg text-white resize-none"
+                            rows="3"
+                            placeholder="Например: Привет, мир! Как дела?"
+                        >Привет, мир! Как дела?</textarea>
+                    </div>
+                    
+                    <div class="mb-6">
+                        <div class="flex justify-between items-center mb-3">
+                            <span class="text-lg font-semibold">Результат токенизации:</span>
+                            <span id="token-count" class="bg-blue-600 px-3 py-1 rounded-full text-sm">0 токенов</span>
+                        </div>
+                        <div id="tokenized-output" class="p-4 bg-gray-700 rounded-lg min-h-20 border-2 border-dashed border-gray-600">
+                            <span class="text-gray-400">Токены появятся здесь...</span>
+                        </div>
+                    </div>
+                    
+                    <div class="grid md:grid-cols-2 gap-6">
+                        <div class="bg-gray-700 p-4 rounded-lg">
+                            <h4 class="font-semibold mb-2 text-green-400">Что такое токены?</h4>
+                            <p class="text-sm text-gray-300">
+                                Токены - это мельчайшие единицы текста, которые понимает нейросеть. 
+                                Это могут быть слова, части слов или даже отдельные символы.
+                            </p>
+                        </div>
+                        <div class="bg-gray-700 p-4 rounded-lg">
+                            <h4 class="font-semibold mb-2 text-blue-400">Почему это важно?</h4>
+                            <p class="text-sm text-gray-300">
+                                Количество токенов влияет на стоимость запроса и ограничения модели. 
+                                1 токен ≈ 0.75 слова в английском языке.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Context Window Section -->
+    <section id="context" class="min-h-screen py-20 bg-gray-800">
+        <div class="container mx-auto px-6">
+            <div class="text-center mb-16">
+                <h2 class="text-5xl font-bold mb-6 bg-gradient-to-r from-purple-400 to-pink-500 bg-clip-text text-transparent">
+                    Контекстное окно
+                </h2>
+                <p class="text-xl text-gray-300 max-w-3xl mx-auto">
+                    Ограничения памяти нейросети и как с ними работать
+                </p>
+            </div>
+            
+            <div class="max-w-6xl mx-auto">
+                <div class="bg-gray-900 rounded-2xl p-8">
+                    <div class="mb-8">
+                        <div class="flex items-center justify-between mb-4">
+                            <label class="text-lg font-semibold">Размер контекстного окна:</label>
+                            <span id="context-size-display" class="bg-purple-600 px-3 py-1 rounded-full">32K токенов</span>
+                        </div>
+                        <input 
+                            id="context-slider" 
+                            type="range" 
+                            min="1" 
+                            max="4" 
+                            value="3" 
+                            class="w-full h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer"
+                        >
+                        <div class="flex justify-between text-sm text-gray-400 mt-2">
+                            <span>1K</span>
+                            <span>4K</span>
+                            <span>32K</span>
+                            <span>200K</span>
+                        </div>
+                    </div>
+                    
+                    <div class="context-window-demo mb-8">
+                        <div class="bg-gray-700 rounded-lg p-4 mb-4">
+                            <h4 class="font-semibold mb-3">Визуализация контекстного окна:</h4>
+                            <div class="context-belt relative h-16 bg-gray-600 rounded-lg overflow-hidden">
+                                <div id="context-content" class="flex items-center h-full px-4 transition-transform duration-1000">
+                                    <!-- Контент будет добавлен через JS -->
+                                </div>
+                                <div class="context-window-border absolute top-0 right-0 w-2 h-full bg-purple-500"></div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="grid md:grid-cols-3 gap-6">
+                        <div class="bg-gray-700 p-4 rounded-lg">
+                            <h4 class="font-semibold mb-2 text-purple-400">Что происходит?</h4>
+                            <p class="text-sm text-gray-300">
+                                Когда текст превышает лимит, старая информация "забывается". 
+                                Модель видит только последние N токенов.
+                            </p>
+                        </div>
+                        <div class="bg-gray-700 p-4 rounded-lg">
+                            <h4 class="font-semibold mb-2 text-pink-400">Современные модели</h4>
+                            <p class="text-sm text-gray-300">
+                                GPT-4: 32K-128K токенов<br>
+                                Claude: до 200K токенов<br>
+                                Gemini: до 1M токенов
+                            </p>
+                        </div>
+                        <div class="bg-gray-700 p-4 rounded-lg">
+                            <h4 class="font-semibold mb-2 text-blue-400">Как управлять?</h4>
+                            <p class="text-sm text-gray-300">
+                                Используйте суммаризацию, разбивайте длинные тексты, 
+                                применяйте RAG для работы с большими документами.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Prompt Engineering Section -->
+    <section id="prompts" class="min-h-screen py-20">
+        <div class="container mx-auto px-6">
+            <div class="text-center mb-16">
+                <h2 class="text-5xl font-bold mb-6 bg-gradient-to-r from-yellow-400 to-red-500 bg-clip-text text-transparent">
+                    Промпт-инжиниринг
+                </h2>
+                <p class="text-xl text-gray-300 max-w-3xl mx-auto">
+                    Искусство правильного общения с нейросетью
+                </p>
+            </div>
+            
+            <div class="max-w-6xl mx-auto">
+                <div class="bg-gray-800 rounded-2xl p-8">
+                    <div class="grid lg:grid-cols-2 gap-8">
+                        <!-- Prompt Constructor -->
+                        <div>
+                            <h3 class="text-2xl font-bold mb-6">Конструктор промпта</h3>
+                            
+                            <div class="space-y-4">
+                                <div class="prompt-block bg-gray-700 rounded-lg p-4">
+                                    <label class="block font-semibold mb-2 text-yellow-400">Роль:</label>
+                                    <select id="role-select" class="w-full p-2 bg-gray-600 rounded text-white">
+                                        <option value="">Выберите роль...</option>
+                                        <option value="Ты опытный программист">Программист</option>
+                                        <option value="Ты креативный писатель">Писатель</option>
+                                        <option value="Ты профессиональный переводчик">Переводчик</option>
+                                        <option value="Ты эксперт по маркетингу">Маркетолог</option>
+                                    </select>
+                                </div>
+                                
+                                <div class="prompt-block bg-gray-700 rounded-lg p-4">
+                                    <label class="block font-semibold mb-2 text-blue-400">Контекст:</label>
+                                    <textarea 
+                                        id="context-input" 
+                                        class="w-full p-2 bg-gray-600 rounded text-white resize-none" 
+                                        rows="2"
+                                        placeholder="Опишите ситуацию или предоставьте справочную информацию..."
+                                    ></textarea>
+                                </div>
+                                
+                                <div class="prompt-block bg-gray-700 rounded-lg p-4">
+                                    <label class="block font-semibold mb-2 text-green-400">Задача:</label>
+                                    <textarea 
+                                        id="task-input" 
+                                        class="w-full p-2 bg-gray-600 rounded text-white resize-none" 
+                                        rows="2"
+                                        placeholder="Четко сформулируйте, что нужно сделать..."
+                                    ></textarea>
+                                </div>
+                                
+                                <div class="prompt-block bg-gray-700 rounded-lg p-4">
+                                    <label class="block font-semibold mb-2 text-purple-400">Формат ответа:</label>
+                                    <select id="format-select" class="w-full p-2 bg-gray-600 rounded text-white">
+                                        <option value="">Без ограничений</option>
+                                        <option value="Ответь в формате списка">Список</option>
+                                        <option value="Ответь в формате JSON">JSON</option>
+                                        <option value="Ответь максимум в 100 словах">Краткий ответ (100 слов)</option>
+                                        <option value="Структурируй ответ по пунктам">По пунктам</option>
+                                    </select>
+                                </div>
+                            </div>
+                            
+                            <div class="mt-6">
+                                <div class="flex items-center justify-between mb-2">
+                                    <span class="font-semibold">Качество промпта:</span>
+                                    <div id="prompt-quality" class="flex items-center">
+                                        <div class="quality-bar w-32 h-2 bg-gray-600 rounded-full mr-2">
+                                            <div id="quality-fill" class="h-full bg-gradient-to-r from-red-500 to-green-500 rounded-full transition-all duration-300" style="width: 0%"></div>
+                                        </div>
+                                        <span id="quality-text" class="text-sm">0%</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Generated Prompt -->
+                        <div>
+                            <h3 class="text-2xl font-bold mb-6">Готовый промпт</h3>
+                            
+                            <div class="bg-gray-700 rounded-lg p-4 mb-6 min-h-64">
+                                <div id="generated-prompt" class="text-gray-300 whitespace-pre-wrap">
+                                    Ваш промпт появится здесь по мере заполнения полей...
+                                </div>
+                            </div>
+                            
+                            <button id="copy-prompt" class="w-full bg-gradient-to-r from-yellow-500 to-red-500 hover:from-yellow-600 hover:to-red-600 px-4 py-2 rounded-lg font-semibold transition-all duration-300">
+                                <i class="fas fa-copy mr-2"></i>
+                                Скопировать промпт
+                            </button>
+                            
+                            <div class="mt-6 grid grid-cols-2 gap-4">
+                                <div class="bg-red-900 bg-opacity-50 p-3 rounded-lg">
+                                    <h4 class="font-semibold text-red-400 mb-1">❌ Плохо</h4>
+                                    <p class="text-xs text-gray-300">"Напиши код"</p>
+                                </div>
+                                <div class="bg-green-900 bg-opacity-50 p-3 rounded-lg">
+                                    <h4 class="font-semibold text-green-400 mb-1">✅ Хорошо</h4>
+                                    <p class="text-xs text-gray-300">"Ты опытный Python разработчик. Напиши функцию для сортировки списка словарей по ключу 'date'. Добавь обработку ошибок."</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Temperature Section -->
+    <section id="temperature" class="min-h-screen py-20 bg-gray-800">
+        <div class="container mx-auto px-6">
+            <div class="text-center mb-16">
+                <h2 class="text-5xl font-bold mb-6 bg-gradient-to-r from-red-400 to-yellow-500 bg-clip-text text-transparent">
+                    Температура
+                </h2>
+                <p class="text-xl text-gray-300 max-w-3xl mx-auto">
+                    Управляйте креативностью и предсказуемостью ответов
+                </p>
+            </div>
+            
+            <div class="max-w-6xl mx-auto">
+                <div class="bg-gray-900 rounded-2xl p-8">
+                    <div class="mb-8">
+                        <div class="flex items-center justify-between mb-4">
+                            <label class="text-lg font-semibold">Температура:</label>
+                            <span id="temperature-display" class="bg-gradient-to-r from-blue-500 to-red-500 px-3 py-1 rounded-full">0.7</span>
+                        </div>
+                        <input 
+                            id="temperature-slider" 
+                            type="range" 
+                            min="0" 
+                            max="1" 
+                            step="0.1" 
+                            value="0.7" 
+                            class="w-full h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer"
+                        >
+                        <div class="flex justify-between text-sm text-gray-400 mt-2">
+                            <span>0.0 (Консервативно)</span>
+                            <span>1.0 (Креативно)</span>
+                        </div>
+                    </div>
+                    
+                    <div class="temperature-demo mb-8">
+                        <div class="bg-gray-700 rounded-lg p-6">
+                            <h4 class="font-semibold mb-4">Пример: "Придумай название для стартапа в сфере ИИ"</h4>
+                            
+                            <div class="grid md:grid-cols-2 gap-6">
+                                <div id="low-temp-example" class="response-example bg-blue-900 bg-opacity-30 p-4 rounded-lg border-l-4 border-blue-500">
+                                    <h5 class="font-semibold text-blue-400 mb-2">Низкая температура (0.0-0.3)</h5>
+                                    <div class="responses space-y-2">
+                                        <p class="text-sm">"AI Solutions"</p>
+                                        <p class="text-sm">"Smart Tech"</p>
+                                        <p class="text-sm">"Neural Systems"</p>
+                                    </div>
+                                    <p class="text-xs text-gray-400 mt-2">Предсказуемые, безопасные ответы</p>
+                                </div>
+                                
+                                <div id="high-temp-example" class="response-example bg-red-900 bg-opacity-30 p-4 rounded-lg border-l-4 border-red-500">
+                                    <h5 class="font-semibold text-red-400 mb-2">Высокая температура (0.7-1.0)</h5>
+                                    <div class="responses space-y-2">
+                                        <p class="text-sm">"QuantumMind"</p>
+                                        <p class="text-sm">"SynapseFlow"</p>
+                                        <p class="text-sm">"CogniSpark"</p>
+                                    </div>
+                                    <p class="text-xs text-gray-400 mt-2">Креативные, неожиданные ответы</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="temperature-brain mb-8">
+                        <div class="flex items-center justify-center">
+                            <div id="brain-visualization" class="relative w-32 h-32">
+                                <div class="brain-cold absolute inset-0 bg-blue-500 rounded-full opacity-50 transition-all duration-500"></div>
+                                <div class="brain-hot absolute inset-0 bg-red-500 rounded-full opacity-0 transition-all duration-500"></div>
+                                <div class="absolute inset-0 flex items-center justify-center">
+                                    <i class="fas fa-brain text-3xl text-white"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="grid md:grid-cols-3 gap-6">
+                        <div class="bg-gray-700 p-4 rounded-lg">
+                            <h4 class="font-semibold mb-2 text-blue-400">Низкая (0.0-0.3)</h4>
+                            <p class="text-sm text-gray-300">
+                                <strong>Для:</strong> Анализ данных, техническая документация, точные расчеты
+                            </p>
+                        </div>
+                        <div class="bg-gray-700 p-4 rounded-lg">
+                            <h4 class="font-semibold mb-2 text-yellow-400">Средняя (0.4-0.7)</h4>
+                            <p class="text-sm text-gray-300">
+                                <strong>Для:</strong> Общение, объяснения, сбалансированные ответы
+                            </p>
+                        </div>
+                        <div class="bg-gray-700 p-4 rounded-lg">
+                            <h4 class="font-semibold mb-2 text-red-400">Высокая (0.8-1.0)</h4>
+                            <p class="text-sm text-gray-300">
+                                <strong>Для:</strong> Творческое письмо, мозговой штурм, генерация идей
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="py-20 bg-gray-900">
+        <div class="container mx-auto px-6 text-center">
+            <div class="mb-8">
+                <h3 class="text-3xl font-bold mb-4">Поздравляем!</h3>
+                <p class="text-xl text-gray-300 mb-6">
+                    Вы изучили основы работы нейросетей
+                </p>
+                
+                <div id="completion-certificate" class="max-w-md mx-auto bg-gradient-to-r from-blue-500 to-purple-600 p-6 rounded-2xl">
+                    <i class="fas fa-certificate text-4xl mb-4"></i>
+                    <h4 class="text-xl font-bold mb-2">Сертификат ИИ-грамотности</h4>
+                    <p class="text-sm opacity-90">Вы освоили базовые концепции работы с языковыми моделями</p>
+                </div>
+            </div>
+            
+            <div class="flex justify-center space-x-6 mb-8">
+                <button class="bg-blue-600 hover:bg-blue-700 px-6 py-2 rounded-lg transition-colors">
+                    <i class="fab fa-twitter mr-2"></i>
+                    Поделиться
+                </button>
+                <button class="bg-green-600 hover:bg-green-700 px-6 py-2 rounded-lg transition-colors">
+                    <i class="fab fa-telegram mr-2"></i>
+                    Telegram
+                </button>
+            </div>
+            
+            <p class="text-gray-400">
+                Создано с ❤️ для изучения ИИ • 2024
+            </p>
+        </div>
+    </footer>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>
