@@ -61,20 +61,40 @@ class NeuralNetworkDemo {
                 return;
             }
 
-            // Простая токенизация (в реальности используются более сложные алгоритмы)
+            // Улучшенная токенизация - более реалистичная
             const tokens = [];
-            const words = text.split(/(\s+|[^\w\s])/g).filter(t => t.trim());
             
-            words.forEach(word => {
-                if (word.length > 4) {
-                    // Разбиваем длинные слова на части
-                    const parts = [];
-                    for (let i = 0; i < word.length; i += 3) {
-                        parts.push(word.slice(i, i + 3));
+            // Разбиваем на слова и знаки препинания
+            const parts = text.split(/(\s+|[^\w\sА-Яа-я])/g).filter(t => t.trim());
+            
+            parts.forEach(part => {
+                if (/^[а-яё]+$/i.test(part)) {
+                    // Русские слова - разбиваем по слогам/морфемам
+                    if (part.length > 6) {
+                        const subparts = [];
+                        // Примерное разбиение длинных русских слов
+                        for (let i = 0; i < part.length; i += Math.floor(part.length / 3) + 1) {
+                            subparts.push(part.slice(i, i + Math.floor(part.length / 3) + 1));
+                        }
+                        tokens.push(...subparts.filter(p => p));
+                    } else {
+                        tokens.push(part);
                     }
-                    tokens.push(...parts);
+                } else if (/^[a-z]+$/i.test(part)) {
+                    // Английские слова - разбиваем на морфемы
+                    if (part.length > 5) {
+                        const subparts = [];
+                        // Простое разбиение английских слов
+                        for (let i = 0; i < part.length; i += 3) {
+                            subparts.push(part.slice(i, i + 3));
+                        }
+                        tokens.push(...subparts.filter(p => p));
+                    } else {
+                        tokens.push(part);
+                    }
                 } else {
-                    tokens.push(word);
+                    // Знаки препинания и числа как отдельные токены
+                    tokens.push(part);
                 }
             });
 
@@ -102,39 +122,64 @@ class NeuralNetworkDemo {
         const content = document.getElementById('context-content');
 
         const sizes = ['1K', '4K', '32K', '200K'];
-        const limits = [10, 20, 50, 100]; // Количество элементов для демонстрации
+        const limits = [8, 16, 32, 64]; // Количество видимых токенов
+        
+        // Создаем статичный набор примеров токенов
+        const sampleTokens = [
+            'Привет', ',', 'как', 'дела', '?', 'Что', 'нового', 'в', 'мире', 
+            'нейро', 'сетей', '?', 'Сегодня', 'изучаем', 'основы', 'LLM',
+            'модели', 'и', 'принципы', 'их', 'работы', '.', 'Это', 'очень',
+            'интересная', 'тема', 'для', 'исследования', '!', 'Давайте',
+            'разберем', 'каждый', 'аспект', 'подробно', '.', 'Токены',
+            'являются', 'основой', 'понимания', 'текста', 'нейросетью',
+            '.', 'Каждый', 'символ', 'имеет', 'значение', 'в', 'контексте',
+            'всего', 'предложения', '.', 'Память', 'модели', 'ограничена',
+            'размером', 'контекстного', 'окна', '.', 'За', 'пределами',
+            'лимита', 'информация', 'теряется', '.'
+        ];
 
         const updateContext = () => {
             const value = parseInt(slider.value);
             display.textContent = `${sizes[value - 1]} токенов`;
             
             const limit = limits[value - 1];
-            const items = [];
+            content.innerHTML = '';
             
-            // Генерируем элементы контекста
-            for (let i = 0; i < Math.min(limit + 10, 60); i++) {
+            // Показываем токены в рамках лимита
+            for (let i = 0; i < Math.min(sampleTokens.length, limit + 8); i++) {
                 const item = document.createElement('span');
                 item.className = 'context-item';
-                item.textContent = `token_${i + 1}`;
+                item.textContent = sampleTokens[i];
                 
+                // Плавное выделение токенов за пределами лимита
                 if (i >= limit) {
-                    item.classList.add('old');
+                    item.style.opacity = '0.3';
+                    item.style.filter = 'blur(1px)';
+                    item.style.background = 'rgba(239, 68, 68, 0.2)';
+                    item.style.borderColor = '#ef4444';
+                } else {
+                    item.style.opacity = '1';
+                    item.style.filter = 'none';
+                    item.style.background = 'rgba(59, 130, 246, 0.2)';
+                    item.style.borderColor = '#3b82f6';
                 }
                 
-                items.push(item);
+                content.appendChild(item);
             }
             
-            content.innerHTML = '';
-            items.forEach(item => content.appendChild(item));
-            
-            // Анимация переполнения
-            if (items.length > limit) {
-                setTimeout(() => {
-                    items.slice(limit).forEach(item => {
-                        item.style.opacity = '0.3';
-                        item.style.transform = 'translateX(-100px)';
-                    });
-                }, 500);
+            // Добавляем индикатор границы
+            if (limit < sampleTokens.length) {
+                const boundary = document.createElement('div');
+                boundary.className = 'context-boundary';
+                boundary.style.position = 'absolute';
+                boundary.style.right = '0';
+                boundary.style.top = '0';
+                boundary.style.bottom = '0';
+                boundary.style.width = '3px';
+                boundary.style.background = 'linear-gradient(180deg, #ef4444, #dc2626)';
+                boundary.style.borderRadius = '2px';
+                content.parentElement.style.position = 'relative';
+                content.parentElement.appendChild(boundary);
             }
         };
 
@@ -149,17 +194,13 @@ class NeuralNetworkDemo {
         const taskInput = document.getElementById('task-input');
         const formatSelect = document.getElementById('format-select');
         const generatedPrompt = document.getElementById('generated-prompt');
-        const qualityFill = document.getElementById('quality-fill');
-        const qualityText = document.getElementById('quality-text');
         const copyButton = document.getElementById('copy-prompt');
 
         const updatePrompt = () => {
             const parts = [];
-            let quality = 0;
 
             if (roleSelect.value) {
                 parts.push(roleSelect.value + '.');
-                quality += 25;
                 roleSelect.parentElement.classList.add('filled');
             } else {
                 roleSelect.parentElement.classList.remove('filled');
@@ -167,7 +208,6 @@ class NeuralNetworkDemo {
 
             if (contextInput.value.trim()) {
                 parts.push('\nКонтекст: ' + contextInput.value.trim());
-                quality += 20;
                 contextInput.parentElement.classList.add('filled');
             } else {
                 contextInput.parentElement.classList.remove('filled');
@@ -175,7 +215,6 @@ class NeuralNetworkDemo {
 
             if (taskInput.value.trim()) {
                 parts.push('\nЗадача: ' + taskInput.value.trim());
-                quality += 35;
                 taskInput.parentElement.classList.add('filled');
             } else {
                 taskInput.parentElement.classList.remove('filled');
@@ -183,7 +222,6 @@ class NeuralNetworkDemo {
 
             if (formatSelect.value) {
                 parts.push('\n' + formatSelect.value + '.');
-                quality += 20;
                 formatSelect.parentElement.classList.add('filled');
             } else {
                 formatSelect.parentElement.classList.remove('filled');
@@ -191,18 +229,6 @@ class NeuralNetworkDemo {
 
             const prompt = parts.length > 0 ? parts.join('') : 'Ваш промпт появится здесь по мере заполнения полей...';
             generatedPrompt.textContent = prompt;
-
-            // Обновление качества
-            qualityFill.style.width = `${quality}%`;
-            qualityText.textContent = `${quality}%`;
-            
-            if (quality < 40) {
-                qualityFill.style.background = '#ef4444';
-            } else if (quality < 70) {
-                qualityFill.style.background = '#f59e0b';
-            } else {
-                qualityFill.style.background = '#10b981';
-            }
         };
 
         [roleSelect, contextInput, taskInput, formatSelect].forEach(element => {
@@ -262,30 +288,40 @@ class NeuralNetworkDemo {
             display.style.background = `hsl(${hue}, 70%, 50%)`;
             
             // Анимация мозга
-            brainCold.style.opacity = 1 - value;
-            brainHot.style.opacity = value;
+            if (brainCold) brainCold.style.opacity = 1 - value;
+            if (brainHot) brainHot.style.opacity = value;
             
-            // Обновление примеров
-            const lowResponses = lowTempResponses.slice(0, 3);
-            const highResponses = [];
+            // Статичные примеры в зависимости от температуры
+            let lowResponses, highResponses;
             
-            // Выбираем случайные ответы для высокой температуры
-            for (let i = 0; i < 3; i++) {
-                const randomIndex = Math.floor(Math.random() * highTempResponses.length);
-                highResponses.push(highTempResponses[randomIndex]);
+            if (value <= 0.3) {
+                lowResponses = ['"AI Solutions"', '"Smart Technology"', '"Neural Networks Inc"'];
+                highResponses = ['"AI Solutions"', '"Smart Tech"', '"Neural Corp"'];
+            } else if (value <= 0.7) {
+                lowResponses = ['"AI Solutions"', '"Smart Technology"', '"Neural Networks Inc"'];
+                highResponses = ['"CogniTech"', '"SynapseFlow"', '"MindForge"'];
+            } else {
+                lowResponses = ['"AI Solutions"', '"Smart Technology"', '"Neural Networks Inc"'];
+                highResponses = ['"QuantumDream"', '"CosmoMind"', '"InfinityThink"'];
             }
             
-            lowTempExample.querySelector('.responses').innerHTML = 
-                lowResponses.map(r => `<p class="text-sm">${r}</p>`).join('');
+            if (lowTempExample) {
+                lowTempExample.querySelector('.responses').innerHTML = 
+                    lowResponses.map(r => `<p class="text-sm">${r}</p>`).join('');
+            }
             
-            highTempExample.querySelector('.responses').innerHTML = 
-                highResponses.map(r => `<p class="text-sm">${r}</p>`).join('');
-            
-            // Добавляем эффект "дрожания" для высокой температуры
-            if (value > 0.7) {
-                highTempExample.style.animation = 'shake 0.5s infinite';
-            } else {
-                highTempExample.style.animation = 'none';
+            if (highTempExample) {
+                highTempExample.querySelector('.responses').innerHTML = 
+                    highResponses.map(r => `<p class="text-sm">${r}</p>`).join('');
+                
+                // Визуальные эффекты для высокой температуры
+                if (value > 0.7) {
+                    highTempExample.style.transform = 'scale(1.02)';
+                    highTempExample.style.boxShadow = '0 0 20px rgba(239, 68, 68, 0.3)';
+                } else {
+                    highTempExample.style.transform = 'scale(1)';
+                    highTempExample.style.boxShadow = 'none';
+                }
             }
         };
 
